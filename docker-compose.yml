@@ -98,20 +98,6 @@ services:
       - redis-data:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-    
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: ${COMPOSE_PROJECT_NAME}_redis_ui
-    restart: unless-stopped
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-    ports:
-      - "8081:8081"
-    depends_on:
-      - redis     
-networks:
-  default:
-    name: ${COMPOSE_PROJECT_NAME}
 
 volumes:
   loki-data:
