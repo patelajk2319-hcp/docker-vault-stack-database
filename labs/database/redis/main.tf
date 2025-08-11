@@ -7,9 +7,15 @@ terraform {
   }
 }
 
+locals {
+  admin-role-name = "${var.application-name}-dynamic-admin-role"
+  readonly-role-name = "${var.application-name}-dynamic-readonly-role"
+}
+
+
 # Mount the database secrets engine if not already mounted
 resource "vault_mount" "database" {
-  path        = "database/redis"
+  path        = "database/redis/${var.application-name}"
   type        = "database"
   description = "Database secrets engine for Redis credential mangement"
 }
@@ -18,10 +24,10 @@ resource "vault_mount" "database" {
 # Note that the username and password below must exist before this will successfully
 resource "vault_database_secret_backend_connection" "redis" {
   backend       = vault_mount.database.path
-  name          = "my-redis-database"
+  name          = "${var.database-name}"
   plugin_name   = "redis-database-plugin"
-  allowed_roles = ["redis-dynamic-role", "redis-dynamic-readonly-role", "redis-dynamic-admin-role"]
-  // rotation_period = 120 // Rotate the credential after this period in seconds
+  allowed_roles = ["${local.admin-role-name}", "${local.readonly-role-name}"]
+  //rotation_period = 120 // Rotate the credential after this period in seconds - for dev & testing leave this out
 
   redis {
     host     = "redis"
@@ -36,28 +42,14 @@ resource "vault_database_secret_backend_connection" "redis" {
 }
 
 # Define the Redis role
-resource "vault_database_secret_backend_role" "redis_dynamic_role" {
+resource "vault_database_secret_backend_role" "redis_readonly_role" {
   backend = vault_mount.database.path
-  name    = "redis-dynamic-role"
-  db_name = vault_database_secret_backend_connection.redis.name
-
-  creation_statements = [
-    "[\"~*\", \"+@read\", \"+@write\", \"-@dangerous\"]"
-  ]
-
-  default_ttl = 3600  # 1 hour
-  max_ttl     = 86400 # 24 hours
-}
-
-# Define the Redis role
-resource "vault_database_secret_backend_role" "redis_dynamic_readonly_role" {
-  backend = vault_mount.database.path
-  name    = "redis-dynamic-readonly-role"
+  name    = "${local.readonly-role-name}"
   db_name = vault_database_secret_backend_connection.redis.name
 
   # Read-only ACL permissions for dynamic users
   creation_statements = [
-    "[\"~*\", \"+@read\", \"+info\", \"+ping\"]"
+    "[\"~*\", \"+@read\", \"+info\"]"
   ]
 
   default_ttl = 7200  # 2 hours
@@ -65,9 +57,9 @@ resource "vault_database_secret_backend_role" "redis_dynamic_readonly_role" {
 }
 
 # Create Redis role
-resource "vault_database_secret_backend_role" "redis_dynamic_admin_role" {
+resource "vault_database_secret_backend_role" "redis_admin_role" {
   backend = vault_mount.database.path
-  name    = "redis-dynamic-admin-role"
+  name    = "${local.admin-role-name}"
   db_name = vault_database_secret_backend_connection.redis.name
 
   # Admin ACL permissions for dynamic users (full access)
