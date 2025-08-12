@@ -14,7 +14,7 @@ resource "vault_database_secret_backend_connection" "redis" {
   allowed_roles = concat([
     local.dynamic-admin-role-name,
     local.dynamic-readonly-role-name
-  ], [for user in local.existing-redis-users : user.username])
+  ], [for user in local.existing-redis-users : "${user.username}-role"])
 
   #rotation_period = 120 # Rotate the credential after this period in seconds - for dev & testing leave this out
   redis {
