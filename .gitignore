@@ -3,7 +3,21 @@
 vault-init.json
 
 **/*.bak
+# Local .terraform directories
 **/.terraform
-**/terraform.tfstate
+# .tfstate files
+*.tfstate
+*.tfstate.*
 **/terraform.tfstate.backup
-**/.terraform.local.hcl
+**/.terraform.lock.hcl
+
+# Ignore sensitive files
+*.pem
+*.key
+*.pub
+*.tfvars
+*.tfvars.json
+
+# Crash log files
+crash.log
+crash.*.log
