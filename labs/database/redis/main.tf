@@ -12,9 +12,8 @@ resource "vault_database_secret_backend_connection" "redis" {
   name        = var.database-name
   plugin_name = "redis-database-plugin"
   allowed_roles = concat([
-    local.admin-role-name,
-    local.readonly-role-name,
-    local.static-role-name
+    local.dynamic-admin-role-name,
+    local.dynamic-readonly-role-name
   ], [for user in local.existing-redis-users : user.username])
 
   #rotation_period = 120 # Rotate the credential after this period in seconds - for dev & testing leave this out
@@ -32,8 +31,8 @@ resource "vault_database_secret_backend_connection" "redis" {
 
 module "dynamic_roles" {
   source             = "./modules/roles/dynamic/"
-  readonly-role-name = local.readonly-role-name
-  admin-role-name    = local.admin-role-name
+  readonly-role-name = local.dynamic-readonly-role-name
+  admin-role-name    = local.dynamic-admin-role-name
   db-name            = vault_database_secret_backend_connection.redis.name
   mount-path         = vault_mount.database.path
 

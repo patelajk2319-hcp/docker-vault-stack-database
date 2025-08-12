@@ -13,8 +13,8 @@ resource "vault_database_secret_backend_role" "redis_readonly_role" {
   // renew_statements = []
 
   // IN SECONDS
-  default_ttl = 7200
-  max_ttl     = 86400
+  default_ttl = 7200 # 2 hours
+  max_ttl     = 86400 # 1 Day
 }
 
 // Create Redis role

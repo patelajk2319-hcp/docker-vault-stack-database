@@ -1,8 +1,9 @@
 locals {
-  admin-role-name    = "${var.application-name}-dynamic-admin-role"
-  readonly-role-name = "${var.application-name}-dynamic-readonly-role"
-  static-role-name   = "${var.application-name}-static-role"
+  #These are roles that will be used for creating dynamic creds
+  dynamic-admin-role-name    = "${var.application-name}-dynamic-admin-role"
+  dynamic-readonly-role-name = "${var.application-name}-dynamic-readonly-role"
 
+  #These are users that already exist in Redis which we want Vault to manage going forward
     existing-redis-users = [
     {
       username        = "vault-static-user-1"
