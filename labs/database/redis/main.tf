@@ -1,8 +1,3 @@
-locals {
-  admin-role-name    = "${var.application-name}-dynamic-admin-role"
-  readonly-role-name = "${var.application-name}-dynamic-readonly-role"
-}
-
 # Mount the database secrets engine if not already mounted
 resource "vault_mount" "database" {
   path        = "database/redis/${var.application-name}"
@@ -13,12 +8,16 @@ resource "vault_mount" "database" {
 # Configure the Redis database connection using a custom plugin
 # Note that the username and password below must exist before this will successfully
 resource "vault_database_secret_backend_connection" "redis" {
-  backend       = vault_mount.database.path
-  name          = var.database-name
-  plugin_name   = "redis-database-plugin"
-  allowed_roles = ["${local.admin-role-name}", "${local.readonly-role-name}"]
-  //rotation_period = 120 // Rotate the credential after this period in seconds - for dev & testing leave this out
+  backend     = vault_mount.database.path
+  name        = var.database-name
+  plugin_name = "redis-database-plugin"
+  allowed_roles = concat([
+    local.admin-role-name,
+    local.readonly-role-name,
+    local.static-role-name
+  ], [for user in local.existing-redis-users : user.username])
 
+  #rotation_period = 120 # Rotate the credential after this period in seconds - for dev & testing leave this out
   redis {
     host     = "redis"
     port     = 6379
@@ -40,4 +39,14 @@ module "dynamic_roles" {
 
   depends_on = [vault_database_secret_backend_connection.redis]
 }
+
+module "static_roles" {
+  source               = "./modules/roles/static/"
+  existing-redis-users = local.existing-redis-users
+  db-name              = vault_database_secret_backend_connection.redis.name
+  mount-path           = vault_mount.database.path
+
+  depends_on = [vault_database_secret_backend_connection.redis]
+}
+
 

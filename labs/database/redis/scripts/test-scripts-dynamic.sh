@@ -14,7 +14,7 @@ vault read database/redis/my-redis-application/creds/my-redis-application-dynami
 
 
 # VIEW ALL cuurnet leases 
-vault list  -format=json /sys/leases/lookup/database/redis/my-redis-application/creds/role | jq -r '.[]' | xargs -I {} vault lease lookup  database/redis/my-redis-application/creds/role/{}
+vault list  -format=json /sys/leases/lookup/database/redis/my-redis-application/creds/role/my-redis-application-dynamic-admin-role | jq -r '.[]' | xargs -I {} vault lease lookup  database/redis/my-redis-application/creds/role/my-redis-application-dynamic-admin-role
 
 # MIGHT HAVE TO FORCE IF LEASES STILL EXIST
 vault lease revoke -force database/redis/creds/redis-dynamic-role/<leaseid>
