@@ -21,9 +21,6 @@ vault write -f auth/approle/my-redis-application/role/vault-static-user-1-role/s
 # GET THE ROLE ID
 vault read auth/approle/my-redis-application/role/vault-static-user-1-role/role-id
 
-# Replace with your actual role-id and secret-id
-vault write auth/approle/my-redis-application/login role_id=e4ea54ce-ae00-6300-1822-f3aad8ad962c secret_id=0fa152fe-8194-338c-76a4-78029df90440
-
 #LOGIN INTO VAULT
-vault write auth/approle//my-redis-application/login role_id=450d33b7-f33c-f810-ebae-1bb52c4c2ab3 secret_id=cbaa1a02-60ce-51f2-2bbb-61d5c8d659cf
-vault login token=hvs.CAESIDB5SRShpyOPn6u8yr8_9a6eYhlpfZMV3n9p2AnxmoojGiEKHGh2cy5qdno5NXpkaGlPbWhaV2ozUncxQ1dJdksQuic
+vault write auth/approle//my-redis-application/login role_id=e4ea54ce-ae00-6300-1822-f3aad8ad962c secret_id=57b623ae-6c03-f4b7-964e-955c543904d9
+vault login token=hvs.CAESIJ8VVbdOePVi2Nc1jIpZ_BGzbYCm2YYvVvEW7mjvdhNEGiIKHGh2cy5mUW1SOXJhZDl6b0M1Y1lnMXh2T0tkOXAQ0qIB

@@ -8,22 +8,36 @@ resource "vault_database_secret_backend_static_role" "redis_static_users" {
   rotation_period = each.value.rotation_period
 }
 
-
 resource "vault_policy" "redis-reader" {
   for_each = { for user in var.existing-redis-users : user.username => user }
   
   name = "redis-${each.value.username}-reader-policy"
-
-  policy = <<EOT
-# Allow reading static credentials for ${each.value.username}
-path "database/redis/my-redis-application/static-creds/${each.value.username}-role" {
-  capabilities = ["read"]
+  policy = data.vault_policy_document.read[each.key].hcl
 }
 
-# Allow listing to see available credentials
-path "database/redis/my-redis-application/static-creds" {
-  capabilities = ["list"]
-}
-EOT
+resource "vault_policy" "redis-list" {
+  for_each = { for user in var.existing-redis-users : user.username => user }
+  
+  name = "redis-list-policy"
+  policy = data.vault_policy_document.list.hcl
 }
 
+# Create separate policy documents for each user's read access
+data "vault_policy_document" "read" {
+  for_each = { for user in var.existing-redis-users : user.username => user }
+  
+  rule {
+    path = "database/redis/my-redis-application/static-creds/${each.value.username}-role"
+    capabilities = ["read"]
+    description  = "Allows for Reading Secrets"
+  }
+}
+
+# Single policy document for list access
+data "vault_policy_document" "list" {
+  rule {
+    path = "database/redis/my-redis-application/static-creds"
+    capabilities = ["list"]
+    description  = "Allows for listing secrets"
+  }
+}
